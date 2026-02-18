@@ -1,0 +1,7 @@
+<Solution>
+  <Project Path="Watchlog.Business/Watchlog.Business.csproj" />
+  <Project Path="Watchlog.Data/Watchlog.Data.csproj" />
+  <Project Path="Watchlog.Models/Watchlog.Models.csproj" />
+  <Project Path="Watchlog.UnitTests/Watchlog.UnitTests.csproj" />
+  <Project Path="Watchlog.Web/Watchlog.Web.csproj" />
+</Solution>
