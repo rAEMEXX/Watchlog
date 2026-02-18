@@ -10,4 +10,12 @@
     <ProjectReference Include="..\Watchlog.Models\Watchlog.Models.csproj" />
   </ItemGroup>
 
+  <ItemGroup>
+    <Folder Include="Seed\" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <PackageReference Include="Microsoft.AspNetCore.Identity.EntityFrameworkCore" Version="7.0.20" />
+  </ItemGroup>
+
 </Project>

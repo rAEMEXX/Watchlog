@@ -11,4 +11,14 @@
     <ProjectReference Include="..\Watchlog.Models\Watchlog.Models.csproj" />
   </ItemGroup>
 
+  <ItemGroup>
+    <Folder Include="Authorization\Handlers\" />
+    <Folder Include="Authorization\Requirments\" />
+    <Folder Include="Mappings\" />
+    <Folder Include="Repositories\Interfaces\" />
+    <Folder Include="Repositories\Implementations\" />
+    <Folder Include="Services\Interfaces\" />
+    <Folder Include="Services\Implementations\" />
+  </ItemGroup>
+
 </Project>
