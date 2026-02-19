@@ -1,0 +1,57 @@
+﻿@{
+    ViewData["Title"] = "Import";
+}
+
+<div class="container py-5">
+    <div class="row justify-content-center">
+        <div class="col-12 col-lg-8">
+
+            <div class="d-flex align-items-center justify-content-between mb-3">
+                <div>
+                    <h2 class="mb-1">Import from TMDB</h2>
+                    <div class="text-muted">Search a movie or TV series and add it to your catalog.</div>
+                </div>
+
+                <a class="btn btn-outline-secondary" asp-action="Index">
+                    Back to Catalog
+                </a>
+            </div>
+
+            <div class="card shadow-sm border-0 rounded-4">
+                <div class="card-body p-4 p-md-5">
+                    <form asp-action="Import" method="post" class="d-flex gap-2">
+                        @Html.AntiForgeryToken()
+
+                        <div class="flex-grow-1">
+                            <input name="query"
+                                   class="form-control form-control-lg"
+                                   placeholder="Search for a title… (e.g. Breaking Bad, Inception)"
+                                   autocomplete="off" />
+                            <div class="form-text">
+                                Tip: use the exact name for best matches.
+                            </div>
+                        </div>
+
+                        <button type="submit" class="btn btn-primary btn-lg px-4">
+                            Search
+                        </button>
+                    </form>
+
+                    @if (!ViewData.ModelState.IsValid)
+                    {
+                        <div class="alert alert-danger mt-3 mb-0">
+                            @foreach (var err in ViewData.ModelState.Values.SelectMany(v => v.Errors))
+                            {
+                                <div>@err.ErrorMessage</div>
+                            }
+                        </div>
+                    }
+                </div>
+            </div>
+
+            <div class="text-center text-muted small mt-3">
+                Powered by TMDB
+            </div>
+        </div>
+    </div>
+</div>

@@ -1,6 +1,6 @@
-﻿using WatchLog.Models.Tmdb;
+﻿using Watchlog.Models.Tmdb;
 
-namespace WatchLog.Models.ViewModels
+namespace Watchlog.Models.ViewModels
 {
 	public class ImportResultsViewModel
 	{

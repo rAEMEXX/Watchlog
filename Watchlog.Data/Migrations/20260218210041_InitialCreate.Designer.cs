@@ -5,22 +5,22 @@ using Microsoft.EntityFrameworkCore.Infrastructure;
 using Microsoft.EntityFrameworkCore.Metadata;
 using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
-using WatchLog.Data;
+using Watchlog.Data.Persistance;
 
 #nullable disable
 
-namespace WatchLog.Data.Migrations
+namespace Watchlog.Data.Migrations
 {
     [DbContext(typeof(ApplicationDbContext))]
-    [Migration("20260201143236_AddCatalogEntities")]
-    partial class AddCatalogEntities
+    [Migration("20260218210041_InitialCreate")]
+    partial class InitialCreate
     {
         /// <inheritdoc />
         protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder
-                .HasAnnotation("ProductVersion", "7.0.13")
+                .HasAnnotation("ProductVersion", "7.0.20")
                 .HasAnnotation("Relational:MaxIdentifierLength", 128);
 
             SqlServerModelBuilderExtensions.UseIdentityColumns(modelBuilder);
@@ -170,12 +170,10 @@ namespace WatchLog.Data.Migrations
             modelBuilder.Entity("Microsoft.AspNetCore.Identity.IdentityUserLogin<string>", b =>
                 {
                     b.Property<string>("LoginProvider")
-                        .HasMaxLength(128)
-                        .HasColumnType("nvarchar(128)");
+                        .HasColumnType("nvarchar(450)");
 
                     b.Property<string>("ProviderKey")
-                        .HasMaxLength(128)
-                        .HasColumnType("nvarchar(128)");
+                        .HasColumnType("nvarchar(450)");
 
                     b.Property<string>("ProviderDisplayName")
                         .HasColumnType("nvarchar(max)");
@@ -212,12 +210,10 @@ namespace WatchLog.Data.Migrations
                         .HasColumnType("nvarchar(450)");
 
                     b.Property<string>("LoginProvider")
-                        .HasMaxLength(128)
-                        .HasColumnType("nvarchar(128)");
+                        .HasColumnType("nvarchar(450)");
 
                     b.Property<string>("Name")
-                        .HasMaxLength(128)
-                        .HasColumnType("nvarchar(128)");
+                        .HasColumnType("nvarchar(450)");
 
                     b.Property<string>("Value")
                         .HasColumnType("nvarchar(max)");
@@ -227,7 +223,7 @@ namespace WatchLog.Data.Migrations
                     b.ToTable("AspNetUserTokens", (string)null);
                 });
 
-            modelBuilder.Entity("WatchLog.Data.Entities.Episode", b =>
+            modelBuilder.Entity("Watchlog.Models.Domain.Entities.Episode", b =>
                 {
                     b.Property<int>("Id")
                         .ValueGeneratedOnAdd()
@@ -254,7 +250,7 @@ namespace WatchLog.Data.Migrations
                     b.ToTable("Episodes");
                 });
 
-            modelBuilder.Entity("WatchLog.Data.Entities.Genre", b =>
+            modelBuilder.Entity("Watchlog.Models.Domain.Entities.Genre", b =>
                 {
                     b.Property<int>("Id")
                         .ValueGeneratedOnAdd()
@@ -274,7 +270,7 @@ namespace WatchLog.Data.Migrations
                     b.ToTable("Genres");
                 });
 
-            modelBuilder.Entity("WatchLog.Data.Entities.Season", b =>
+            modelBuilder.Entity("Watchlog.Models.Domain.Entities.Season", b =>
                 {
                     b.Property<int>("Id")
                         .ValueGeneratedOnAdd()
@@ -298,7 +294,7 @@ namespace WatchLog.Data.Migrations
                     b.ToTable("Seasons");
                 });
 
-            modelBuilder.Entity("WatchLog.Data.Entities.Title", b =>
+            modelBuilder.Entity("Watchlog.Models.Domain.Entities.Title", b =>
                 {
                     b.Property<int>("Id")
                         .ValueGeneratedOnAdd()
@@ -327,7 +323,7 @@ namespace WatchLog.Data.Migrations
                     b.ToTable("Titles");
                 });
 
-            modelBuilder.Entity("WatchLog.Data.Entities.TitleGenre", b =>
+            modelBuilder.Entity("Watchlog.Models.Domain.Entities.TitleGenre", b =>
                 {
                     b.Property<int>("TitleId")
                         .HasColumnType("int");
@@ -340,6 +336,68 @@ namespace WatchLog.Data.Migrations
                     b.HasIndex("GenreId");
 
                     b.ToTable("TitleGenres");
+                });
+
+            modelBuilder.Entity("Watchlog.Models.Domain.Entities.UserTitle", b =>
+                {
+                    b.Property<int>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("int");
+
+                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("Id"));
+
+                    b.Property<DateTime>("AddedAt")
+                        .HasColumnType("datetime2");
+
+                    b.Property<int>("TitleId")
+                        .HasColumnType("int");
+
+                    b.Property<string>("UserId")
+                        .IsRequired()
+                        .HasColumnType("nvarchar(450)");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("TitleId");
+
+                    b.HasIndex("UserId", "TitleId")
+                        .IsUnique();
+
+                    b.ToTable("UserTitles");
+                });
+
+            modelBuilder.Entity("Watchlog.Models.Domain.Entities.UserTitleProgress", b =>
+                {
+                    b.Property<int>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("int");
+
+                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("Id"));
+
+                    b.Property<int?>("CurrentEpisode")
+                        .HasColumnType("int");
+
+                    b.Property<int?>("CurrentSeason")
+                        .HasColumnType("int");
+
+                    b.Property<string>("Status")
+                        .IsRequired()
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<int>("TitleId")
+                        .HasColumnType("int");
+
+                    b.Property<string>("UserId")
+                        .IsRequired()
+                        .HasColumnType("nvarchar(450)");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("TitleId");
+
+                    b.HasIndex("UserId");
+
+                    b.ToTable("UserTitleProgresses");
                 });
 
             modelBuilder.Entity("Microsoft.AspNetCore.Identity.IdentityRoleClaim<string>", b =>
@@ -393,9 +451,9 @@ namespace WatchLog.Data.Migrations
                         .IsRequired();
                 });
 
-            modelBuilder.Entity("WatchLog.Data.Entities.Episode", b =>
+            modelBuilder.Entity("Watchlog.Models.Domain.Entities.Episode", b =>
                 {
-                    b.HasOne("WatchLog.Data.Entities.Season", "Season")
+                    b.HasOne("Watchlog.Models.Domain.Entities.Season", "Season")
                         .WithMany("Episodes")
                         .HasForeignKey("SeasonId")
                         .OnDelete(DeleteBehavior.Cascade)
@@ -404,9 +462,9 @@ namespace WatchLog.Data.Migrations
                     b.Navigation("Season");
                 });
 
-            modelBuilder.Entity("WatchLog.Data.Entities.Season", b =>
+            modelBuilder.Entity("Watchlog.Models.Domain.Entities.Season", b =>
                 {
-                    b.HasOne("WatchLog.Data.Entities.Title", "Title")
+                    b.HasOne("Watchlog.Models.Domain.Entities.Title", "Title")
                         .WithMany("Seasons")
                         .HasForeignKey("TitleId")
                         .OnDelete(DeleteBehavior.Cascade)
@@ -415,15 +473,15 @@ namespace WatchLog.Data.Migrations
                     b.Navigation("Title");
                 });
 
-            modelBuilder.Entity("WatchLog.Data.Entities.TitleGenre", b =>
+            modelBuilder.Entity("Watchlog.Models.Domain.Entities.TitleGenre", b =>
                 {
-                    b.HasOne("WatchLog.Data.Entities.Genre", "Genre")
+                    b.HasOne("Watchlog.Models.Domain.Entities.Genre", "Genre")
                         .WithMany("TitleGenres")
                         .HasForeignKey("GenreId")
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
 
-                    b.HasOne("WatchLog.Data.Entities.Title", "Title")
+                    b.HasOne("Watchlog.Models.Domain.Entities.Title", "Title")
                         .WithMany("TitleGenres")
                         .HasForeignKey("TitleId")
                         .OnDelete(DeleteBehavior.Cascade)
@@ -434,17 +492,55 @@ namespace WatchLog.Data.Migrations
                     b.Navigation("Title");
                 });
 
-            modelBuilder.Entity("WatchLog.Data.Entities.Genre", b =>
+            modelBuilder.Entity("Watchlog.Models.Domain.Entities.UserTitle", b =>
+                {
+                    b.HasOne("Watchlog.Models.Domain.Entities.Title", "Title")
+                        .WithMany()
+                        .HasForeignKey("TitleId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.HasOne("Microsoft.AspNetCore.Identity.IdentityUser", "User")
+                        .WithMany()
+                        .HasForeignKey("UserId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.Navigation("Title");
+
+                    b.Navigation("User");
+                });
+
+            modelBuilder.Entity("Watchlog.Models.Domain.Entities.UserTitleProgress", b =>
+                {
+                    b.HasOne("Watchlog.Models.Domain.Entities.Title", "Title")
+                        .WithMany()
+                        .HasForeignKey("TitleId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.HasOne("Microsoft.AspNetCore.Identity.IdentityUser", "User")
+                        .WithMany()
+                        .HasForeignKey("UserId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.Navigation("Title");
+
+                    b.Navigation("User");
+                });
+
+            modelBuilder.Entity("Watchlog.Models.Domain.Entities.Genre", b =>
                 {
                     b.Navigation("TitleGenres");
                 });
 
-            modelBuilder.Entity("WatchLog.Data.Entities.Season", b =>
+            modelBuilder.Entity("Watchlog.Models.Domain.Entities.Season", b =>
                 {
                     b.Navigation("Episodes");
                 });
 
-            modelBuilder.Entity("WatchLog.Data.Entities.Title", b =>
+            modelBuilder.Entity("Watchlog.Models.Domain.Entities.Title", b =>
                 {
                     b.Navigation("Seasons");
 

@@ -1,6 +1,6 @@
 ﻿using System.Text.Json.Serialization;
 
-namespace WatchLog.Models.Tmdb
+namespace Watchlog.Models.Tmdb
 {
 	public class TmdbSeasonDetails
 	{

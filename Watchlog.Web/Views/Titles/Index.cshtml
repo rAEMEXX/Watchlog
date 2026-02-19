@@ -1,0 +1,141 @@
+﻿@model List<Watchlog.Models.ViewModels.TitleCatalogItemViewModel>
+
+<h2>My Catalog</h2>
+
+@if (TempData["SavedMsg"] != null)
+{
+    <div class="alert alert-success">
+        @TempData["SavedMsg"]
+    </div>
+}
+
+
+<table class="table table-striped">
+    <thead>
+        <tr>
+            <th>Name</th>
+            <th>Year</th>
+            <th>Progress</th>
+            <th>Actions</th>
+        </tr>
+    </thead>
+    <tbody>
+        @foreach (var t in Model)
+        {
+            <tr>
+                <td>
+                    <strong>@t.Name</strong><br />
+                    <small>@(t.IsSeries ? "TV Series" : "Movie")</small>
+                </td>
+
+                <td>@t.ReleaseYear</td>
+
+                <td>
+                    @if (t.IsSeries)
+                    {
+                        <div class="mb-2">
+                            <small class="text-muted">
+                                @if (t.CurrentSeason != null && t.CurrentEpisode != null)
+                                {
+                                    <span>Saved: S@(t.CurrentSeason) E@(t.CurrentEpisode) (@(t.Status ?? "Watching"))</span>
+                                }
+                                else
+                                {
+                                    <span>No progress yet</span>
+                                }
+                            </small>
+                        </div>
+
+                        <form asp-action="UpdateProgress" method="post" class="d-flex gap-2 align-items-center">
+                            @Html.AntiForgeryToken()
+                            <input type="hidden" name="titleId" value="@t.Id" />
+
+                            <select name="season" class="form-select season-select" style="width:150px;">
+                                @foreach (var season in t.Seasons)
+                                {
+                                    <option value="@season.SeasonNumber"
+                                            data-episodes="@season.EpisodeCount"
+                                            selected="@(t.CurrentSeason == season.SeasonNumber)">
+                                        Season @season.SeasonNumber
+                                    </option>
+                                }
+                            </select>
+
+                            <select name="episode" class="form-select episode-select" style="width:150px;"
+                                    data-current-episode="@(t.CurrentEpisode ?? 1)">
+                            </select>
+
+                            <button type="submit" class="btn btn-sm btn-primary">Save</button>
+                        </form>
+                    }
+                    else
+                    {
+                        <div class="mb-2">
+                            <small class="text-muted">
+                                Status: <strong>@(t.Status ?? "Not watched")</strong>
+                            </small>
+                        </div>
+
+                        <form asp-action="MarkWatched" method="post">
+                            @Html.AntiForgeryToken()
+                            <input type="hidden" name="titleId" value="@t.Id" />
+                            <button type="submit" class="btn btn-sm btn-success">Watched</button>
+                        </form>
+                    }
+                </td>
+
+                <td>
+                    <form asp-action="RemoveFromCatalog" method="post">
+                        @Html.AntiForgeryToken()
+                        <input type="hidden" name="titleId" value="@t.Id" />
+                        <button type="submit" class="btn btn-sm btn-danger">Remove</button>
+                    </form>
+                </td>
+            </tr>
+        }
+    </tbody>
+</table>
+
+<a asp-action="Import" class="btn btn-outline-primary">
+    Import new title
+</a>
+
+<script>
+    document.addEventListener("DOMContentLoaded", function () {
+
+        document.querySelectorAll(".season-select").forEach(function (seasonSelect) {
+
+            function updateEpisodes() {
+                const selectedOption = seasonSelect.options[seasonSelect.selectedIndex];
+                const episodeCount = parseInt(selectedOption.getAttribute("data-episodes") || "0", 10);
+
+                const form = seasonSelect.closest("form");
+                const episodeSelect = form.querySelector(".episode-select");
+
+                const currentEpisode = parseInt(episodeSelect.getAttribute("data-current-episode") || "1", 10);
+
+                episodeSelect.innerHTML = "";
+
+                if (!episodeCount || episodeCount < 1) return;
+
+                for (let i = 1; i <= episodeCount; i++) {
+                    const option = document.createElement("option");
+                    option.value = i;
+                    option.text = "Episode " + i;
+                    if (i === currentEpisode) option.selected = true;
+                    episodeSelect.appendChild(option);
+                }
+            }
+
+            seasonSelect.addEventListener("change", function () {
+                const form = seasonSelect.closest("form");
+                const episodeSelect = form.querySelector(".episode-select");
+                episodeSelect.setAttribute("data-current-episode", "1"); // като смениш сезон, default на E1
+                updateEpisodes();
+            });
+
+            updateEpisodes();
+        });
+
+    });
+</script>

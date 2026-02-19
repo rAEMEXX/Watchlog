@@ -1,0 +1,61 @@
+﻿@model Watchlog.Models.Domain.Entities.Title
+
+@{
+    ViewData["Title"] = "Details";
+}
+
+<h2>@Model.Name</h2>
+
+@if (Model.ReleaseYear != null)
+{
+    <p><strong>Year:</strong> @Model.ReleaseYear</p>
+}
+
+<p><strong>Type:</strong> @(Model.IsSeries ? "TV Series" : "Movie")</p>
+
+@if (!string.IsNullOrWhiteSpace(Model.Overview))
+{
+    <p>@Model.Overview</p>
+}
+
+<h3>Genres</h3>
+@if (Model.TitleGenres != null && Model.TitleGenres.Any())
+{
+    <ul>
+        @foreach (var g in Model.TitleGenres.Select(x => x.Genre.Name))
+        {
+            <li>@g</li>
+        }
+    </ul>
+}
+else
+{
+    <p>No genres.</p>
+}
+
+@if (Model.IsSeries)
+{
+    <h3>Seasons</h3>
+
+    if (Model.Seasons != null && Model.Seasons.Any())
+    {
+        @foreach (var s in Model.Seasons.OrderBy(x => x.SeasonNumber))
+        {
+            <h4>Season @s.SeasonNumber (@s.EpisodeCount episodes)</h4>
+
+            if (s.Episodes != null && s.Episodes.Any())
+            {
+                <ul>
+                    @foreach (var ep in s.Episodes.OrderBy(x => x.EpisodeNumber))
+                    {
+                        <li>E@(ep.EpisodeNumber) - @ep.Name</li>
+                    }
+                </ul>
+            }
+        }
+    }
+    else
+    {
+        <p>No seasons.</p>
+    }
+}

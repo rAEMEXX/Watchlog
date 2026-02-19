@@ -1,6 +1,8 @@
 using Microsoft.AspNetCore.Identity;
 using Microsoft.EntityFrameworkCore;
-using WatchLog.Services;
+using Watchlog.Business.Options;
+using Watchlog.Business.Services.Implementations;
+using Watchlog.Business.Services.Interfaces;
 using Watchlog.Data.Persistance;
 
 namespace WatchLog
@@ -21,13 +23,15 @@ namespace WatchLog
                 .AddEntityFrameworkStores<ApplicationDbContext>();
             builder.Services.AddControllersWithViews();
 
+            builder.Services.AddScoped<ITmdbService, TmdbService>();
+
             builder.Services.AddHttpClient("tmdb", client =>
             {
                 client.BaseAddress = new Uri("https://api.themoviedb.org/3/");
             });
 
             builder.Services.Configure<TmdbOptions>(builder.Configuration.GetSection("Tmdb"));
-            builder.Services.AddScoped<TmdbService>();
+            builder.Services.AddScoped<ITmdbService, TmdbService>();
 
             var app = builder.Build();
 

@@ -1,4 +1,4 @@
-﻿namespace WatchLog.Models.ViewModels
+﻿namespace Watchlog.Models.ViewModels
 {
     public class TitleCatalogItemViewModel
     {

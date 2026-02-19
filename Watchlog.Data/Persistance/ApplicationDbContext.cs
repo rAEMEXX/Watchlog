@@ -1,8 +1,8 @@
 ﻿using Microsoft.AspNetCore.Identity.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore;
-using WatchLog.Models.Domain.Entities;
+using Watchlog.Models.Domain.Entities;
 
-namespace WatchLog.Data.Persistance
+namespace Watchlog.Data.Persistance
 {
 	public class ApplicationDbContext : IdentityDbContext
 	{

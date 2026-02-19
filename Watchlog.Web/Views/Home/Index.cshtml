@@ -1,8 +1,101 @@
-﻿@{
-    ViewData["Title"] = "Home Page";
+﻿@using Microsoft.AspNetCore.Identity
+@inject SignInManager<IdentityUser> SignInManager
+
+@{
+    ViewData["Title"] = "Home";
 }
 
-<div class="text-center">
-    <h1 class="display-4">Welcome</h1>
-    <p>Learn about <a href="https://docs.microsoft.com/aspnet/core">building Web apps with ASP.NET Core</a>.</p>
+<div class="container py-5">
+    <div class="row align-items-center g-4">
+        <div class="col-12 col-lg-7">
+
+            <h1 class="display-5 fw-bold mb-3">
+                Track movies & series.<br />
+                Save your progress in seconds.
+            </h1>
+
+            <p class="lead text-muted mb-4">
+                Import titles from TMDB, keep a personal catalog, and continue exactly where you left off.
+            </p>
+
+            <div class="d-flex flex-wrap gap-2">
+                @if (SignInManager.IsSignedIn(User))
+                {
+                    <a class="btn btn-primary btn-lg" asp-controller="Titles" asp-action="Index">
+                        Open Catalog
+                    </a>
+                    <a class="btn btn-outline-primary btn-lg" asp-controller="Titles" asp-action="Import">
+                        Import from TMDB
+                    </a>
+                }
+                else
+                {
+                    <a class="btn btn-primary btn-lg" asp-area="Identity" asp-page="/Account/Login">
+                        Log in
+                    </a>
+                    <a class="btn btn-outline-primary btn-lg" asp-area="Identity" asp-page="/Account/Register">
+                        Create account
+                    </a>
+                }
+            </div>
+
+            <div class="mt-4 text-muted small">
+                Tip: Mark the last episode of the last season to auto-complete a series.
+            </div>
+        </div>
+
+        <div class="col-12 col-lg-5">
+            <div class="card shadow-sm border-0 rounded-4">
+                <div class="card-body p-4">
+                    <h5 class="fw-semibold mb-3">What you can do</h5>
+
+                    <div class="d-flex gap-3 mb-3">
+                        <div class="icon-bubble">🎬</div>
+                        <div>
+                            <div class="fw-semibold">Import from TMDB</div>
+                            <div class="text-muted small">Auto-detect year, seasons & episode counts.</div>
+                        </div>
+                    </div>
+
+                    <div class="d-flex gap-3 mb-3">
+                        <div class="icon-bubble">📌</div>
+                        <div>
+                            <div class="fw-semibold">Personal progress</div>
+                            <div class="text-muted small">Season/episode tracking per account.</div>
+                        </div>
+                    </div>
+
+                    <div class="d-flex gap-3">
+                        <div class="icon-bubble">✅</div>
+                        <div>
+                            <div class="fw-semibold">Smart completion</div>
+                            <div class="text-muted small">Automatically marks a show as completed.</div>
+                        </div>
+                    </div>
+
+                    <hr class="my-4" />
+
+                    <div class="row g-3">
+                        <div class="col-6">
+                            <div class="stat-card">
+                                <div class="stat-number">TMDB</div>
+                                <div class="stat-label">Data source</div>
+                            </div>
+                        </div>
+                        <div class="col-6">
+                            <div class="stat-card">
+                                <div class="stat-number">Fast</div>
+                                <div class="stat-label">One-click import</div>
+                            </div>
+                        </div>
+                    </div>
+
+                </div>
+            </div>
+
+            <div class="text-center text-muted small mt-3">
+                Built with ASP.NET Core MVC + EF Core
+            </div>
+        </div>
+    </div>
 </div>

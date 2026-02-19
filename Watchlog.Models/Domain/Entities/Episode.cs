@@ -1,4 +1,4 @@
-﻿namespace WatchLog.Models.Domain.Entities
+﻿namespace Watchlog.Models.Domain.Entities
 {
 	public class Episode
 	{
