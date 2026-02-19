@@ -21,6 +21,9 @@ namespace WatchLog
                 options.UseSqlServer(connectionString));
             builder.Services.AddDatabaseDeveloperPageExceptionFilter();
             builder.Services.AddScoped(typeof(IRepository<>), typeof(Repository<>));
+            builder.Services.AddScoped<ICatalogImportService, CatalogImportService>();
+            builder.Services.AddScoped<IUserCatalogService, UserCatalogService>();
+            builder.Services.AddScoped<IUserProgressService, UserProgressService>();
 
             builder.Services.AddDefaultIdentity<IdentityUser>(options => options.SignIn.RequireConfirmedAccount = true)
                 .AddEntityFrameworkStores<ApplicationDbContext>();
