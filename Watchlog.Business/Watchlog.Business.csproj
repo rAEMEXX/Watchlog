@@ -15,11 +15,10 @@
     <Folder Include="Authorization\Handlers\" />
     <Folder Include="Authorization\Requirments\" />
     <Folder Include="Mappings\" />
-    <Folder Include="Repositories\Interfaces\" />
-    <Folder Include="Repositories\Implementations\" />
   </ItemGroup>
 
   <ItemGroup>
+    <PackageReference Include="AutoMapper" Version="13.0.1" />
     <PackageReference Include="Microsoft.Extensions.Http" Version="7.0.0" />
   </ItemGroup>
 

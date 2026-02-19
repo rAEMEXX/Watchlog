@@ -1,6 +1,8 @@
 using Microsoft.AspNetCore.Identity;
 using Microsoft.EntityFrameworkCore;
 using Watchlog.Business.Options;
+using Watchlog.Business.Repositories.Implementations;
+using Watchlog.Business.Repositories.Interfaces;
 using Watchlog.Business.Services.Implementations;
 using Watchlog.Business.Services.Interfaces;
 using Watchlog.Data.Persistance;
@@ -18,6 +20,7 @@ namespace WatchLog
             builder.Services.AddDbContext<ApplicationDbContext>(options =>
                 options.UseSqlServer(connectionString));
             builder.Services.AddDatabaseDeveloperPageExceptionFilter();
+            builder.Services.AddScoped(typeof(IRepository<>), typeof(Repository<>));
 
             builder.Services.AddDefaultIdentity<IdentityUser>(options => options.SignIn.RequireConfirmedAccount = true)
                 .AddEntityFrameworkStores<ApplicationDbContext>();
