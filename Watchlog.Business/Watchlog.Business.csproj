@@ -14,7 +14,6 @@
   <ItemGroup>
     <Folder Include="Authorization\Handlers\" />
     <Folder Include="Authorization\Requirments\" />
-    <Folder Include="Mappings\" />
   </ItemGroup>
 
   <ItemGroup>

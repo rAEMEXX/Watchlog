@@ -24,6 +24,7 @@ namespace WatchLog
             builder.Services.AddScoped<ICatalogImportService, CatalogImportService>();
             builder.Services.AddScoped<IUserCatalogService, UserCatalogService>();
             builder.Services.AddScoped<IUserProgressService, UserProgressService>();
+            builder.Services.AddAutoMapper(AppDomain.CurrentDomain.GetAssemblies());
 
             builder.Services.AddDefaultIdentity<IdentityUser>(options => options.SignIn.RequireConfirmedAccount = true)
                 .AddEntityFrameworkStores<ApplicationDbContext>();

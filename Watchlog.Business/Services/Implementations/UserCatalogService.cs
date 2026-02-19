@@ -1,4 +1,5 @@
-﻿using Microsoft.EntityFrameworkCore;
+﻿using AutoMapper;
+using Microsoft.EntityFrameworkCore;
 using Watchlog.Business.Repositories.Interfaces;
 using Watchlog.Business.Services.Interfaces;
 using Watchlog.Models.Domain.Entities;
@@ -10,23 +11,20 @@ namespace Watchlog.Business.Services.Implementations
     {
         private readonly IRepository<UserTitle> _userTitles;
         private readonly IRepository<UserTitleProgress> _progress;
-        private readonly IRepository<Title> _titles;
+        private readonly IMapper _mapper;
 
         public UserCatalogService(
             IRepository<UserTitle> userTitles,
             IRepository<UserTitleProgress> progress,
-            IRepository<Title> titles)
+            IMapper mapper)
         {
             _userTitles = userTitles;
             _progress = progress;
-            _titles = titles;
+            _mapper = mapper;
         }
 
         public async Task<List<TitleCatalogItemViewModel>> GetCatalogAsync(string userId, CancellationToken ct = default)
         {
-            if (string.IsNullOrWhiteSpace(userId))
-                throw new InvalidOperationException("User not logged in.");
-
             var titles = await _userTitles.Query()
                 .Where(ut => ut.UserId == userId)
                 .Include(ut => ut.Title)
@@ -39,54 +37,39 @@ namespace Watchlog.Business.Services.Implementations
                 .Where(p => p.UserId == userId)
                 .ToDictionaryAsync(p => p.TitleId, ct);
 
-            return titles.Select(t =>
+            var result = new List<TitleCatalogItemViewModel>(titles.Count);
+
+            foreach (var t in titles)
             {
-                progressByTitleId.TryGetValue(t.Id, out var p);
+                var vm = _mapper.Map<TitleCatalogItemViewModel>(t);
 
-                return new TitleCatalogItemViewModel
+                // Ensure dropdown seasons are sorted (AutoMapper preserves order as-is)
+                vm.Seasons = vm.Seasons.OrderBy(s => s.SeasonNumber).ToList();
+
+                // Fill user-specific fields
+                if (progressByTitleId.TryGetValue(t.Id, out var p))
                 {
-                    Id = t.Id,
-                    Name = t.Name,
-                    ReleaseYear = t.ReleaseYear,
-                    IsSeries = t.IsSeries,
+                    vm.CurrentSeason = p.CurrentSeason;
+                    vm.CurrentEpisode = p.CurrentEpisode;
+                    vm.Status = p.Status;
+                }
 
-                    Seasons = t.Seasons
-                        .OrderBy(s => s.SeasonNumber)
-                        .Select(s => new SeasonOption
-                        {
-                            SeasonNumber = s.SeasonNumber,
-                            EpisodeCount = s.EpisodeCount
-                        })
-                        .ToList(),
+                result.Add(vm);
+            }
 
-                    CurrentSeason = p?.CurrentSeason,
-                    CurrentEpisode = p?.CurrentEpisode,
-                    Status = p?.Status
-                };
-            }).ToList();
+            return result;
         }
 
         public async Task RemoveFromCatalogAsync(string userId, int titleId, CancellationToken ct = default)
         {
-            if (string.IsNullOrWhiteSpace(userId))
-                throw new InvalidOperationException("User not logged in.");
-
+            // same as your Step 4 implementation
             var link = await _userTitles.Query()
                 .FirstOrDefaultAsync(ut => ut.UserId == userId && ut.TitleId == titleId, ct);
 
-            if (link != null)
-            {
-                _userTitles.Delete(link);
+            if (link == null) return;
 
-                var prog = await _progress.Query()
-                    .FirstOrDefaultAsync(p => p.UserId == userId && p.TitleId == titleId, ct);
-
-                if (prog != null)
-                    _progress.Delete(prog);
-
-                await _userTitles.SaveChangesAsync(ct);
-                await _progress.SaveChangesAsync(ct);
-            }
+            _userTitles.Delete(link);
+            await _userTitles.SaveChangesAsync(ct);
         }
     }
 }
