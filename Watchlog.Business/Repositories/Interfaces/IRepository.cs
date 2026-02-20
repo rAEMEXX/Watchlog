@@ -1,29 +1,21 @@
 ﻿using System.Linq.Expressions;
 
-namespace Watchlog.Business.Repositories.Interfaces
+namespace Watchlog.Business.Repositories.Interfaces;
+
+public interface IRepository<T> where T : class
 {
-    public interface IRepository<TEntity> where TEntity : class
-    {
-        IQueryable<TEntity> Query();
+    IQueryable<T> Query();
 
-        Task<TEntity?> GetByIdAsync(object id, CancellationToken ct = default);
+    Task<T?> GetByIdAsync(Guid id, params Expression<Func<T, object>>[] includes);
+    Task<IEnumerable<T>> GetAllAsync(params Expression<Func<T, object>>[] includes);
+    Task<IEnumerable<T>> FilterAsync(Expression<Func<T, bool>> predicate, params Expression<Func<T, object>>[] includes);
 
-        Task<List<TEntity>> GetAllAsync(CancellationToken ct = default);
+    Task AddAsync(T entity, CancellationToken ct = default);
+    Task AddRangeAsync(IEnumerable<T> entities, CancellationToken ct = default);
 
-        Task<List<TEntity>> FindAsync(
-            Expression<Func<TEntity, bool>> predicate,
-            CancellationToken ct = default);
+    void Update(T entity);
+    void Delete(T entity);
+    void DeleteRange(IEnumerable<T> entities);
 
-        Task AddAsync(TEntity entity, CancellationToken ct = default);
-
-        Task AddRangeAsync(IEnumerable<TEntity> entities, CancellationToken ct = default);
-
-        void Update(TEntity entity);
-
-        void Delete(TEntity entity);
-
-        void DeleteRange(IEnumerable<TEntity> entities);
-
-        Task<int> SaveChangesAsync(CancellationToken ct = default);
-    }
+    Task<int> SaveChangesAsync(CancellationToken ct = default);
 }
