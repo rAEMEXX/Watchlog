@@ -89,10 +89,10 @@ public class Program
         app.UseAuthentication();
         app.UseAuthorization();
 
-        // ✅ IMPORTANT: Area route for Admin panel
+        // ✅ Admin-only area route (IMPORTANT: do NOT use {area:exists} because it breaks Identity Razor Pages)
         app.MapControllerRoute(
-            name: "areas",
-            pattern: "{area:exists}/{controller=Users}/{action=Index}/{id?}");
+            name: "admin",
+            pattern: "Admin/{controller=Users}/{action=Index}/{id?}");
 
         app.MapControllerRoute(
             name: "default",
