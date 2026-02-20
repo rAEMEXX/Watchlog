@@ -29,13 +29,13 @@ public class UsersController : Controller
             .OrderBy(u => u.Email)
             .ToListAsync(ct);
 
-        // Catalog counts in one query
         var catalogCounts = await _db.UserTitles
             .GroupBy(x => x.UserId)
             .Select(g => new { UserId = g.Key, Count = g.Count() })
             .ToDictionaryAsync(x => x.UserId, x => x.Count, ct);
 
         var vm = new List<AdminUserListItemViewModel>(users.Count);
+
         foreach (var u in users)
         {
             var roles = await _userManager.GetRolesAsync(u);
@@ -81,14 +81,22 @@ public class UsersController : Controller
         {
             progressByTitleId.TryGetValue(ut.TitleId, out var p);
 
+            // Build dictionary seasonNumber -> episodeCount
+            var eps = (ut.Title.Seasons ?? new List<Season>())
+                .Where(s => s.SeasonNumber > 0)
+                .OrderBy(s => s.SeasonNumber)
+                .ToDictionary(s => s.SeasonNumber, s => s.EpisodeCount);
+
             vm.Items.Add(new AdminUserCatalogItemViewModel
             {
                 TitleId = ut.TitleId,
                 TitleName = ut.Title.Name,
                 SeasonsCount = ut.Title.Seasons?.Count ?? 0,
+                EpisodesPerSeason = eps,
+
                 CurrentSeason = p?.CurrentSeason,
                 CurrentEpisode = p?.CurrentEpisode,
-                Status = p?.Status ?? "Watching",
+                Status = p?.Status ?? "",
                 AddedAt = ut.AddedAt
             });
         }
@@ -122,11 +130,20 @@ public class UsersController : Controller
     [ValidateAntiForgeryToken]
     public async Task<IActionResult> UpdateProgress(string userId, int titleId, int season, int? episode, CancellationToken ct)
     {
+        // ✅ Do not create progress for movies / titles with 0 seasons
+        var seasonsCount = await _db.Seasons.CountAsync(s => s.TitleId == titleId, ct);
+        if (seasonsCount <= 0)
+        {
+            return RedirectToAction(nameof(Catalog), new { id = userId, message = "This title has no seasons. Progress can't be edited." });
+        }
+
         if (season < 1) season = 1;
+
+        // If episode was left blank in the form, treat it as 1
         var epValue = episode ?? 1;
         if (epValue < 1) epValue = 1;
 
-        // Clamp episode to season max if season exists
+        // Clamp episode to season max (if season exists)
         var seasonRow = await _db.Seasons
             .Where(s => s.TitleId == titleId && s.SeasonNumber == season)
             .Select(s => new { s.EpisodeCount })
@@ -155,6 +172,7 @@ public class UsersController : Controller
         var lastSeason = await _db.Seasons
             .Where(s => s.TitleId == titleId)
             .OrderByDescending(s => s.SeasonNumber)
+            .Select(s => new { s.SeasonNumber, s.EpisodeCount })
             .FirstOrDefaultAsync(ct);
 
         if (lastSeason != null && season == lastSeason.SeasonNumber && epValue == lastSeason.EpisodeCount)

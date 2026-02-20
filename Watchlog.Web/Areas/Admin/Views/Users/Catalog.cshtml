@@ -27,7 +27,7 @@ else
         <thead>
             <tr>
                 <th>Title</th>
-                <th style="width: 330px;">Progress</th>
+                <th style="width: 420px;">Progress</th>
                 <th>Status</th>
                 <th>Added</th>
                 <th style="width: 140px;"></th>
@@ -36,47 +36,92 @@ else
         <tbody>
             @foreach (var item in Model.Items)
             {
-                <tr>
+                var rowId = $"t{item.TitleId}";
+                <tr data-titleid="@item.TitleId">
                     <td>
                         <strong>@item.TitleName</strong><br />
                         <small class="text-muted">TitleId: @item.TitleId • Seasons: @item.SeasonsCount</small>
                     </td>
 
                     <td>
-                        <form asp-area="Admin"
-                              asp-controller="Users"
-                              asp-action="UpdateProgress"
-                              method="post"
-                              class="row g-2">
-                            @Html.AntiForgeryToken()
-                            <input type="hidden" name="userId" value="@Model.UserId" />
-                            <input type="hidden" name="titleId" value="@item.TitleId" />
+                        @if (item.SeasonsCount <= 0 || item.EpisodesPerSeason.Count == 0)
+                        {
+                            <span class="text-muted">—</span>
+                        }
+                        else
+                        {
+                            // Choose current season or default to first season in dictionary
+                            var defaultSeason = item.CurrentSeason ?? item.EpisodesPerSeason.Keys.OrderBy(x => x).First();
+                            var maxEpisodesForDefault = item.EpisodesPerSeason.TryGetValue(defaultSeason, out var m) ? m : 0;
 
-                            <div class="col-6">
-                                <label class="form-label mb-0">Season</label>
-                                <input class="form-control form-control-sm"
-                                       type="number"
-                                       min="1"
-                                       name="season"
-                                       value="@(item.CurrentSeason ?? 1)" />
-                            </div>
+                            // Choose current episode or default to 1 (but clamp to maxEpisodesForDefault if known)
+                            var defaultEpisode = item.CurrentEpisode ?? 1;
+                            if (maxEpisodesForDefault > 0 && defaultEpisode > maxEpisodesForDefault)
+                            {
+                                defaultEpisode = maxEpisodesForDefault;
+                            }
 
-                            <div class="col-6">
-                                <label class="form-label mb-0">Episode</label>
-                                <input class="form-control form-control-sm"
-                                       type="number"
-                                       min="1"
-                                       name="episode"
-                                       value="@(item.CurrentEpisode ?? 1)" />
-                            </div>
+                            <form asp-area="Admin"
+                                  asp-controller="Users"
+                                  asp-action="UpdateProgress"
+                                  method="post"
+                                  class="row g-2 align-items-end">
+                                @Html.AntiForgeryToken()
+                                <input type="hidden" name="userId" value="@Model.UserId" />
+                                <input type="hidden" name="titleId" value="@item.TitleId" />
 
-                            <div class="col-12 text-end">
-                                <button class="btn btn-sm btn-success" type="submit">Save</button>
-                            </div>
-                        </form>
+                                <div class="col-5">
+                                    <label class="form-label mb-0">Season</label>
+                                    <select class="form-select form-select-sm js-season"
+                                            name="season"
+                                            id="season-@rowId"
+                                            data-episodes="@System.Text.Json.JsonSerializer.Serialize(item.EpisodesPerSeason)">
+                                        @foreach (var s in item.EpisodesPerSeason.Keys.OrderBy(x => x))
+                                        {
+                                            <option value="@s" selected="@(s == defaultSeason)">
+                                                Season @s
+                                            </option>
+                                        }
+                                    </select>
+                                </div>
+
+                                <div class="col-5">
+                                    <label class="form-label mb-0">Episode</label>
+                                    <select class="form-select form-select-sm js-episode"
+                                            name="episode"
+                                            id="episode-@rowId">
+                                        @{
+                                            var maxEp = item.EpisodesPerSeason.TryGetValue(defaultSeason, out var max) ? max : 0;
+                                            if (maxEp <= 0) { maxEp = 1; }
+
+                                            for (var e = 1; e <= maxEp; e++)
+                                            {
+                                                <option value="@e" selected="@(e == defaultEpisode)">
+                                                    Episode @e
+                                                </option>
+                                            }
+                                        }
+                                    </select>
+                                </div>
+
+                                <div class="col-2 text-end">
+                                    <button class="btn btn-sm btn-success" type="submit">Save</button>
+                                </div>
+                            </form>
+                        }
                     </td>
 
-                    <td>@item.Status</td>
+                    <td>
+                        @if (string.IsNullOrWhiteSpace(item.Status))
+                        {
+                            <span class="text-muted">—</span>
+                        }
+                        else
+                        {
+                            @item.Status
+                        }
+                    </td>
+
                     <td>@item.AddedAt.ToLocalTime().ToString("yyyy-MM-dd HH:mm")</td>
 
                     <td class="text-end">
@@ -95,4 +140,40 @@ else
             }
         </tbody>
     </table>
+}
+
+@section Scripts {
+    <script>
+        (function () {
+            function buildEpisodeOptions(episodeSelect, maxEpisodes, selectedEpisode) {
+                episodeSelect.innerHTML = "";
+                const max = Math.max(1, parseInt(maxEpisodes || 1, 10));
+                const sel = Math.min(Math.max(1, parseInt(selectedEpisode || 1, 10)), max);
+
+                for (let e = 1; e <= max; e++) {
+                    const opt = document.createElement("option");
+                    opt.value = e;
+                    opt.textContent = "Episode " + e;
+                    if (e === sel) opt.selected = true;
+                    episodeSelect.appendChild(opt);
+                }
+            }
+
+            document.querySelectorAll("select.js-season").forEach(seasonSelect => {
+                const row = seasonSelect.closest("tr");
+                const episodeSelect = row.querySelector("select.js-episode");
+                const episodesMapJson = seasonSelect.getAttribute("data-episodes");
+                let map = {};
+                try { map = JSON.parse(episodesMapJson); } catch { map = {}; }
+
+                function onSeasonChange() {
+                    const season = seasonSelect.value;
+                    const maxEpisodes = map[season] || 1;
+                    buildEpisodeOptions(episodeSelect, maxEpisodes, 1);
+                }
+
+                seasonSelect.addEventListener("change", onSeasonChange);
+            });
+        })();
+    </script>
 }

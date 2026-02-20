@@ -1,6 +1,7 @@
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.EntityFrameworkCore;
+using Watchlog.Business.Authorization;
 using Watchlog.Business.Authorization.Handlers;
 using Watchlog.Business.Authorization.Requirements;
 using Watchlog.Business.Options;
@@ -10,8 +11,6 @@ using Watchlog.Business.Services.Implementations;
 using Watchlog.Business.Services.Interfaces;
 using Watchlog.Data.Persistance;
 using Watchlog.Data.Seed;
-using Watchlog.Business.Authorization;
-
 
 namespace WatchLog;
 
@@ -29,18 +28,23 @@ public class Program
 
         builder.Services.AddDatabaseDeveloperPageExceptionFilter();
 
-        // ✅ Identity + Roles
-        builder.Services.AddDefaultIdentity<IdentityUser>(options => options.SignIn.RequireConfirmedAccount = true)
+        // ✅ Identity + Roles + Identity UI (Razor Pages)
+        builder.Services
+            .AddDefaultIdentity<IdentityUser>(options =>
+            {
+                options.SignIn.RequireConfirmedAccount = true;
+            })
             .AddRoles<IdentityRole>()
             .AddEntityFrameworkStores<ApplicationDbContext>();
 
         builder.Services.AddControllersWithViews();
+        builder.Services.AddRazorPages(); // ✅ ensure Razor Pages services are registered
         builder.Services.AddAutoMapper(AppDomain.CurrentDomain.GetAssemblies());
 
         // ✅ Repository
         builder.Services.AddTransient(typeof(IRepository<>), typeof(Repository<>));
 
-        // ✅ Your services
+        // ✅ Services
         builder.Services.AddTransient<ICatalogImportService, CatalogImportService>();
         builder.Services.AddTransient<IUserCatalogService, UserCatalogService>();
         builder.Services.AddTransient<IUserProgressService, UserProgressService>();
@@ -89,16 +93,19 @@ public class Program
         app.UseAuthentication();
         app.UseAuthorization();
 
-        // ✅ Admin-only area route (IMPORTANT: do NOT use {area:exists} because it breaks Identity Razor Pages)
-        app.MapControllerRoute(
+        // ✅ Map Identity Razor Pages FIRST
+        app.MapRazorPages();
+
+        // ✅ Admin area route (must be area-aware)
+        app.MapAreaControllerRoute(
             name: "admin",
+            areaName: "Admin",
             pattern: "Admin/{controller=Users}/{action=Index}/{id?}");
 
+        // ✅ Default MVC route
         app.MapControllerRoute(
             name: "default",
             pattern: "{controller=Titles}/{action=Index}/{id?}");
-
-        app.MapRazorPages();
 
         app.Run();
     }
