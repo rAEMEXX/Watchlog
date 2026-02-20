@@ -1,21 +1,25 @@
 ﻿using Microsoft.Extensions.DependencyInjection;
 using Watchlog.Data.Persistance;
 
-namespace Watchlog.Data.Seed;
-
-public static class DatabaseSeeder
+namespace Watchlog.Data.Seed
 {
-    public static async Task SeedAsync(IServiceProvider services)
+    /// <summary>
+    /// Seeds demo data
+    /// </summary>
+    public static class DatabaseSeeder
     {
-        using var scope = services.CreateScope();
-        var sp = scope.ServiceProvider;
+        public static async Task SeedAsync(IServiceProvider services)
+        {
+            using IServiceScope scope = services.CreateScope();
+            IServiceProvider scopeProvider = scope.ServiceProvider;
 
-        var db = sp.GetRequiredService<ApplicationDbContext>();
+            ApplicationDbContext dbContext = scopeProvider.GetRequiredService<ApplicationDbContext>();
 
-        // 1) Seed roles/users first (depends on Identity services)
-        await UserSeeder.SeedAsync(sp);
+            // 1) Seed roles and users (requires Identity services)
+            await UserSeeder.SeedAsync(scopeProvider);
 
-        // 2) Seed minimal app data
-        await TitleSeeder.SeedAsync(db);
+            // 2) Seed minimal application data
+            await TitleSeeder.SeedAsync(dbContext);
+        }
     }
 }

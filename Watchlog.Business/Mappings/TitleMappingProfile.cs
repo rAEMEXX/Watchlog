@@ -4,6 +4,10 @@ using Watchlog.Models.ViewModels;
 
 namespace Watchlog.Business.Mappings
 {
+    /// <summary>
+    /// Defines mappings between title-related domain entities and
+    /// view models used in the catalog and selection interfaces.
+    /// </summary>
     public class TitleMappingProfile : Profile
     {
         public TitleMappingProfile()

@@ -4,6 +4,10 @@ using Watchlog.Models.Tmdb;
 
 namespace Watchlog.Business.Mappings
 {
+    /// <summary>
+    /// Defines mappings between TMDb API models and domain entities
+    /// used for importing movies, TV series, and season data.
+    /// </summary>
     public class TmdbMappingProfile : Profile
     {
         public TmdbMappingProfile()

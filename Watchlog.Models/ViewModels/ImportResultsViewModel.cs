@@ -2,11 +2,24 @@
 
 namespace Watchlog.Models.ViewModels
 {
-	public class ImportResultsViewModel
-	{
-		public string Query { get; set; } = null!;
+    /// <summary>
+    /// Represents the results returned from a TMDB import search.
+    /// </summary>
+    public class ImportResultsViewModel
+    {
+        /// <summary>
+        /// Gets or sets the search query entered by the user.
+        /// </summary>
+        public string Query { get; set; } = null!;
 
-		public List<TmdbSearchItem> TvResults { get; set; } = new();
-		public List<TmdbSearchItem> MovieResults { get; set; } = new();
-	}
+        /// <summary>
+        /// Gets or sets the TV series results returned from TMDB.
+        /// </summary>
+        public List<TmdbSearchItem> TvResults { get; set; } = new();
+
+        /// <summary>
+        /// Gets or sets the movie results returned from TMDB.
+        /// </summary>
+        public List<TmdbSearchItem> MovieResults { get; set; } = new();
+    }
 }
