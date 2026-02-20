@@ -12,6 +12,7 @@ using Watchlog.Data.Persistance;
 using Watchlog.Data.Seed;
 using Watchlog.Business.Authorization;
 
+
 namespace WatchLog;
 
 public class Program
@@ -28,7 +29,7 @@ public class Program
 
         builder.Services.AddDatabaseDeveloperPageExceptionFilter();
 
-        // ✅ Identity + Roles (Foodie-style)
+        // ✅ Identity + Roles
         builder.Services.AddDefaultIdentity<IdentityUser>(options => options.SignIn.RequireConfirmedAccount = true)
             .AddRoles<IdentityRole>()
             .AddEntityFrameworkStores<ApplicationDbContext>();
@@ -36,7 +37,7 @@ public class Program
         builder.Services.AddControllersWithViews();
         builder.Services.AddAutoMapper(AppDomain.CurrentDomain.GetAssemblies());
 
-        // ✅ Repository (keep one lifetime consistently)
+        // ✅ Repository
         builder.Services.AddTransient(typeof(IRepository<>), typeof(Repository<>));
 
         // ✅ Your services
@@ -44,7 +45,7 @@ public class Program
         builder.Services.AddTransient<IUserCatalogService, UserCatalogService>();
         builder.Services.AddTransient<IUserProgressService, UserProgressService>();
 
-        // ✅ TMDB HttpClient + Options + service (ONLY ONCE)
+        // ✅ TMDB
         builder.Services.AddHttpClient("tmdb", client =>
         {
             client.BaseAddress = new Uri("https://api.themoviedb.org/3/");
@@ -53,7 +54,7 @@ public class Program
         builder.Services.Configure<TmdbOptions>(builder.Configuration.GetSection("Tmdb"));
         builder.Services.AddTransient<ITmdbService, TmdbService>();
 
-        // ✅ Authorization policy + handler (Foodie-style)
+        // ✅ Authorization policy + handler
         builder.Services.AddAuthorizationBuilder()
             .AddPolicy(Policies.UserTitleAccessPolicy, policy =>
             {
@@ -64,7 +65,7 @@ public class Program
 
         var app = builder.Build();
 
-        // ✅ Seed data (Foodie-style)
+        // ✅ Seed roles/admin + minimal data
         using (var scope = app.Services.CreateScope())
         {
             await DatabaseSeeder.SeedAsync(scope.ServiceProvider);
@@ -85,13 +86,18 @@ public class Program
 
         app.UseRouting();
 
-        // ✅ REQUIRED: Authentication before Authorization
         app.UseAuthentication();
         app.UseAuthorization();
+
+        // ✅ IMPORTANT: Area route for Admin panel
+        app.MapControllerRoute(
+            name: "areas",
+            pattern: "{area:exists}/{controller=Users}/{action=Index}/{id?}");
 
         app.MapControllerRoute(
             name: "default",
             pattern: "{controller=Titles}/{action=Index}/{id?}");
+
         app.MapRazorPages();
 
         app.Run();

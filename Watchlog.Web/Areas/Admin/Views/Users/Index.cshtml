@@ -1,0 +1,37 @@
+﻿@model List<AdminUserListItemViewModel>
+
+@{
+    ViewData["Title"] = "Admin - Users";
+}
+
+<h2>Users</h2>
+
+<table class="table table-striped">
+    <thead>
+        <tr>
+            <th>Email</th>
+            <th>Roles</th>
+            <th>Catalog items</th>
+            <th></th>
+        </tr>
+    </thead>
+    <tbody>
+        @foreach (var u in Model)
+        {
+            <tr>
+                <td>@u.Email</td>
+                <td>@string.Join(", ", u.Roles)</td>
+                <td>@u.CatalogCount</td>
+                <td class="text-end">
+                    <a class="btn btn-sm btn-primary"
+                       asp-area="Admin"
+                       asp-controller="Users"
+                       asp-action="Catalog"
+                       asp-route-id="@u.Id">
+                        View catalog
+                    </a>
+                </td>
+            </tr>
+        }
+    </tbody>
+</table>

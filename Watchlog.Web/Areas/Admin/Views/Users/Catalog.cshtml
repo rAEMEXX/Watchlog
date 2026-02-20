@@ -1,0 +1,98 @@
+﻿@model AdminUserCatalogViewModel
+
+@{
+    ViewData["Title"] = "Admin - User Catalog";
+}
+
+<div class="d-flex align-items-center justify-content-between">
+    <h2>Catalog: @Model.UserEmail</h2>
+    <a class="btn btn-outline-secondary"
+       asp-area="Admin"
+       asp-controller="Users"
+       asp-action="Index">Back</a>
+</div>
+
+@if (!string.IsNullOrWhiteSpace(Model.Message))
+{
+    <div class="alert alert-success mt-3">@Model.Message</div>
+}
+
+@if (Model.Items.Count == 0)
+{
+    <div class="alert alert-info mt-3">This user has no titles in their catalog.</div>
+}
+else
+{
+    <table class="table table-bordered mt-3 align-middle">
+        <thead>
+            <tr>
+                <th>Title</th>
+                <th style="width: 330px;">Progress</th>
+                <th>Status</th>
+                <th>Added</th>
+                <th style="width: 140px;"></th>
+            </tr>
+        </thead>
+        <tbody>
+            @foreach (var item in Model.Items)
+            {
+                <tr>
+                    <td>
+                        <strong>@item.TitleName</strong><br />
+                        <small class="text-muted">TitleId: @item.TitleId • Seasons: @item.SeasonsCount</small>
+                    </td>
+
+                    <td>
+                        <form asp-area="Admin"
+                              asp-controller="Users"
+                              asp-action="UpdateProgress"
+                              method="post"
+                              class="row g-2">
+                            @Html.AntiForgeryToken()
+                            <input type="hidden" name="userId" value="@Model.UserId" />
+                            <input type="hidden" name="titleId" value="@item.TitleId" />
+
+                            <div class="col-6">
+                                <label class="form-label mb-0">Season</label>
+                                <input class="form-control form-control-sm"
+                                       type="number"
+                                       min="1"
+                                       name="season"
+                                       value="@(item.CurrentSeason ?? 1)" />
+                            </div>
+
+                            <div class="col-6">
+                                <label class="form-label mb-0">Episode</label>
+                                <input class="form-control form-control-sm"
+                                       type="number"
+                                       min="1"
+                                       name="episode"
+                                       value="@(item.CurrentEpisode ?? 1)" />
+                            </div>
+
+                            <div class="col-12 text-end">
+                                <button class="btn btn-sm btn-success" type="submit">Save</button>
+                            </div>
+                        </form>
+                    </td>
+
+                    <td>@item.Status</td>
+                    <td>@item.AddedAt.ToLocalTime().ToString("yyyy-MM-dd HH:mm")</td>
+
+                    <td class="text-end">
+                        <form asp-area="Admin"
+                              asp-controller="Users"
+                              asp-action="RemoveTitle"
+                              method="post"
+                              onsubmit="return confirm('Remove this title from the user catalog?');">
+                            @Html.AntiForgeryToken()
+                            <input type="hidden" name="userId" value="@Model.UserId" />
+                            <input type="hidden" name="titleId" value="@item.TitleId" />
+                            <button class="btn btn-sm btn-danger" type="submit">Remove</button>
+                        </form>
+                    </td>
+                </tr>
+            }
+        </tbody>
+    </table>
+}

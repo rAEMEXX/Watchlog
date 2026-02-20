@@ -14,17 +14,11 @@ public static class UserSeeder
         await EnsureRole(roleManager, "Admin");
         await EnsureRole(roleManager, "User");
 
-        // Admin user
+        // Admin user (keep this so you can access the admin panel)
         await EnsureUser(userManager,
             email: "admin@admin.com",
             password: "Admin#123",
             role: "Admin");
-
-        // Normal user
-        await EnsureUser(userManager,
-            email: "user@user.com",
-            password: "User#123",
-            role: "User");
     }
 
     private static async Task EnsureRole(RoleManager<IdentityRole> roleManager, string role)
