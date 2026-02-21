@@ -1,11 +1,11 @@
-# Build stage
 FROM mcr.microsoft.com/dotnet/sdk:7.0 AS build
-WORKDIR /app
+WORKDIR /src
 
 COPY . .
-RUN dotnet publish -c Release -o out
 
-# Runtime stage
+# 👇 change this path to your real web csproj path
+RUN dotnet publish Watchlog.Web/Watchlog.Web.csproj -c Release -o /app/out
+
 FROM mcr.microsoft.com/dotnet/aspnet:7.0
 WORKDIR /app
 COPY --from=build /app/out .
