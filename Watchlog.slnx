@@ -1,4 +1,7 @@
 <Solution>
+  <Folder Name="/Solution Items/">
+    <File Path="Dockerfile.txt" />
+  </Folder>
   <Project Path="Watchlog.Business/Watchlog.Business.csproj" />
   <Project Path="Watchlog.Data/Watchlog.Data.csproj" />
   <Project Path="Watchlog.Models/Watchlog.Models.csproj" />
